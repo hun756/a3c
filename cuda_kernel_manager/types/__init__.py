@@ -32,6 +32,15 @@ from .enums import (
     SchedulingPolicy,
     StreamType,
 )
+from .generics import (
+    DeviceT,
+    KernelT,
+    MemoryT,
+    NodeT,
+    P,
+    StreamT,
+    T,
+)
 from .protocols import (
     AsyncDisposable,
     Cacheable,
@@ -50,6 +59,7 @@ __all__ = [
     "Copyable",
     "DeviceID",
     "DeviceInfo",
+    "DeviceT",
     "DeviceTopology",
     "DeviceType",
     "Disposable",
@@ -62,10 +72,14 @@ __all__ = [
     "KernelHash",
     "KernelInfo",
     "KernelMetrics",
+    "KernelT",
     "MemoryInfo",
     "MemoryPtr",
+    "MemoryT",
     "MemoryType",
     "ModuleHandle",
+    "NodeT",
+    "P",
     "ProfileMetrics",
     "ProfilerHandle",
     "Resizable",
@@ -73,5 +87,7 @@ __all__ = [
     "Serializable",
     "SourceHash",
     "StreamHandle",
+    "StreamT",
     "StreamType",
+    "T",
 ]
