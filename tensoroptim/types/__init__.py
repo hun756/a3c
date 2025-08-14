@@ -1,7 +1,7 @@
 from .aliases import TensorID, MemoryOffset, ByteSize
 from .enums import MemoryBackendType, TensorLifecycleState, CompressionType, AllocationStrategy
 from .protocols import IMemorySegment, IAllocator, ICodec
-from .descriptors import TensorDescriptor
+from .descriptors import TensorDescriptor, TensorMetrics
 
 __all__ = [
     "TensorID",
@@ -15,4 +15,5 @@ __all__ = [
     "IAllocator",
     "ICodec",
     "TensorDescriptor",
+    "TensorMetrics",
 ]

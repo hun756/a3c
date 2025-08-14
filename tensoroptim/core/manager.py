@@ -22,7 +22,7 @@ from .pool import TensorPool
 from .tensor import SharedTensor
 
 
-class SharedTensorManager:
+class TensorManager:
     """Ultra-high performance shared tensor manager with background optimization."""
     
     __slots__ = ('_pool', '_lock', '_closed', '_background_optimizer', '_optimizer_interval')
@@ -198,7 +198,7 @@ class SharedTensorManager:
         """Get available NUMA nodes."""
         return self._pool.numa_nodes
     
-    def __enter__(self) -> SharedTensorManager:
+    def __enter__(self) -> TensorManager:
         """Context manager entry."""
         return self
     
@@ -206,7 +206,7 @@ class SharedTensorManager:
         """Context manager exit with cleanup."""
         self.close()
     
-    async def __aenter__(self) -> SharedTensorManager:
+    async def __aenter__(self) -> TensorManager:
         """Async context manager entry."""
         return self
     
@@ -217,7 +217,7 @@ class SharedTensorManager:
     def __repr__(self) -> str:
         """String representation of the manager."""
         return (
-            f"SharedTensorManager(backend={self.backend_type.name}, "
+            f"TensorManager(backend={self.backend_type.name}, "
             f"compression={self.compression_enabled}, closed={self._closed})"
         )
     
@@ -231,19 +231,19 @@ class SharedTensorManager:
 
 
 @lru_cache(maxsize=1)
-def get_default_manager() -> SharedTensorManager:
+def get_default_manager() -> TensorManager:
     """Get the default ultra shared tensor manager (singleton)."""
-    return SharedTensorManager()
+    return TensorManager()
 
 
-def create_manager(**kwargs) -> SharedTensorManager:
+def create_manager(**kwargs) -> TensorManager:
     """Create a new ultra shared tensor manager with custom configuration."""
-    return SharedTensorManager(**kwargs)
+    return TensorManager(**kwargs)
 
 
-def create_optimized_manager_for_cuda() -> SharedTensorManager:
+def create_optimized_manager_for_cuda() -> TensorManager:
     """Create a manager optimized for CUDA workloads."""
-    return SharedTensorManager(
+    return TensorManager(
         backend=MemoryBackendType.CUDA_IPC if torch.cuda.is_available() else MemoryBackendType.HUGEPAGES,
         compression=False,
         numa_aware=True,
@@ -251,9 +251,9 @@ def create_optimized_manager_for_cuda() -> SharedTensorManager:
     )
 
 
-def create_high_throughput_manager() -> SharedTensorManager:
+def create_high_throughput_manager() -> TensorManager:
     """Create a manager optimized for high throughput scenarios."""
-    return SharedTensorManager(
+    return TensorManager(
         backend=MemoryBackendType.HUGEPAGES,
         max_memory=ByteSize(16 * 1024**3),  # 16GB
         compression=True,
@@ -264,9 +264,9 @@ def create_high_throughput_manager() -> SharedTensorManager:
     )
 
 
-def create_memory_efficient_manager() -> SharedTensorManager:
+def create_memory_efficient_manager() -> TensorManager:
     """Create a manager optimized for memory efficiency."""
-    return SharedTensorManager(
+    return TensorManager(
         backend=MemoryBackendType.POSIX_SHM,
         max_memory=ByteSize(2 * 1024**3),  # 2GB
         compression=True,

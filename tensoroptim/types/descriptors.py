@@ -10,6 +10,28 @@ from .enums import CompressionType
 
 
 @dataclass(frozen=True)
+class TensorMetrics:
+    creation_time: float
+    access_count: int = 0
+    last_access: float = 0.0
+    serialization_time: float = 0.0
+    deserialization_time: float = 0.0
+    compression_ratio: float = 1.0
+    memory_efficiency: float = 1.0
+    
+    def update_access(self, timestamp: float) -> 'TensorMetrics':
+        return TensorMetrics(
+            creation_time=self.creation_time,
+            access_count=self.access_count + 1,
+            last_access=timestamp,
+            serialization_time=self.serialization_time,
+            deserialization_time=self.deserialization_time,
+            compression_ratio=self.compression_ratio,
+            memory_efficiency=self.memory_efficiency
+        )
+
+
+@dataclass(frozen=True)
 class TensorDescriptor:
     tensor_id: TensorID
     shape: Tuple[int, ...]

@@ -1,19 +1,13 @@
-"""
-Core components of TensorOptim library.
-
-This module contains the main components for tensor management,
-including the shared tensor manager, tensor pools, and registries.
-"""
-
-from .manager import SharedTensorManager
-from .tensor import SharedTensor, TensorReference
+from .reference import TensorReference
+from .tensor import SharedTensor
 from .pool import TensorPool
 from .registry import TensorRegistry
+from .manager import TensorManager
 
 __all__ = [
-    "SharedTensorManager",
+    "TensorReference",
     "SharedTensor",
-    "TensorReference", 
-    "TensorPool",
+    "TensorPool", 
     "TensorRegistry",
+    "TensorManager",
 ]

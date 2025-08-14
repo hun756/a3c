@@ -16,6 +16,7 @@ from .types import (
     IAllocator,
     ICodec,
     TensorDescriptor,
+    TensorMetrics,
 )
 
 from .exceptions import (
@@ -30,7 +31,25 @@ from .exceptions import (
     BackendError,
 )
 
+from .core import (
+    TensorReference,
+    SharedTensor,
+    TensorRegistry,
+    TensorManager,
+)
+
+from .memory import (
+    MemoryBackend,
+    HugePagesBackend,
+    PosixShmBackend,
+    CudaIpcBackend,
+    SlabAllocator,
+)
+
+from .codecs.codec import TensorCodec
+
 __all__ = [
+    # Types
     "TensorID",
     "MemoryOffset",
     "ByteSize",
@@ -42,6 +61,9 @@ __all__ = [
     "IAllocator",
     "ICodec",
     "TensorDescriptor",
+    "TensorMetrics",
+    
+    # Exceptions
     "TensorOptimError",
     "MemoryError",
     "AllocationFailure",
@@ -51,6 +73,22 @@ __all__ = [
     "TensorNotFound",
     "CompressionError",
     "BackendError",
+    
+    # Core Components
+    "TensorReference",
+    "SharedTensor",
+    "TensorRegistry",
+    "TensorManager",
+    
+    # Memory Components
+    "MemoryBackend",
+    "HugePagesBackend",
+    "PosixShmBackend",
+    "CudaIpcBackend",
+    "SlabAllocator",
+    
+    # Codecs
+    "TensorCodec",
 ]
 
 VERSION_INFO = tuple(map(int, __version__.split('.')))
