@@ -10,7 +10,7 @@ import torch
 import numpy as np
 
 from tensoroptim import (
-    SharedTensorManager,
+    TensorManager,
     create_manager,
     create_memory_efficient_manager,
     MemoryBackendType,
