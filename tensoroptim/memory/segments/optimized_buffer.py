@@ -52,7 +52,9 @@ class OptimizedBuffer:
         if offset + size > self._size:
             raise ValueError(f"Read beyond buffer bounds: {offset + size} > {self._size}")
         
-        return memoryview(self._buffer[offset:offset + size])
+        # Create a bytes object from the ctypes array slice
+        data_slice = bytes(self._buffer[offset:offset + size])
+        return memoryview(data_slice)
     
     def write_vectorized(self, offset: MemoryOffset, data: bytes | memoryview) -> None:
         if not self._buffer:

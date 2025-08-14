@@ -48,6 +48,16 @@ from .memory import (
 
 from .codecs.codec import TensorCodec
 
+from .factory import (
+    get_default_manager,
+    create_manager,
+    create_optimized_manager_for_cuda,
+    create_high_throughput_manager,
+    create_memory_efficient_manager,
+)
+
+from .profiling import PerformanceProfiler
+
 __all__ = [
     # Types
     "TensorID",
@@ -89,6 +99,16 @@ __all__ = [
     
     # Codecs
     "TensorCodec",
+    
+    # Factory Functions
+    "get_default_manager",
+    "create_manager",
+    "create_optimized_manager_for_cuda",
+    "create_high_throughput_manager",
+    "create_memory_efficient_manager",
+    
+    # Profiling
+    "PerformanceProfiler",
 ]
 
 VERSION_INFO = tuple(map(int, __version__.split('.')))

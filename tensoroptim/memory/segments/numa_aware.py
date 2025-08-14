@@ -32,18 +32,27 @@ class NumaAwareSegment:
     
     def _create_segment(self) -> None:
         try:
-            self._fd = os.open('/dev/zero', os.O_RDWR)
-            
-            self._mmap = mmap.mmap(
-                self._fd,
-                self._size,
-                mmap.MAP_PRIVATE | mmap.MAP_ANONYMOUS,
-                mmap.PROT_READ | mmap.PROT_WRITE
-            )
+            if os.name == 'nt':
+                # Windows: Use anonymous memory mapping
+                self._mmap = mmap.mmap(
+                    -1,
+                    self._size,
+                    access=mmap.ACCESS_WRITE
+                )
+                self._fd = None
+            else:
+                # Unix: Use /dev/zero
+                self._fd = os.open('/dev/zero', os.O_RDWR)
+                self._mmap = mmap.mmap(
+                    self._fd,
+                    self._size,
+                    mmap.MAP_PRIVATE | mmap.MAP_ANONYMOUS,
+                    mmap.PROT_READ | mmap.PROT_WRITE
+                )
             
             self._virtual_address = id(self._mmap)
             
-            if self._numa_node >= 0:
+            if self._numa_node >= 0 and os.name != 'nt':
                 self._bind_to_numa_node()
             
         except Exception as e:

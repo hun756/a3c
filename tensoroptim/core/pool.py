@@ -35,7 +35,8 @@ from ..memory.allocators import SlabAllocator
 from ..codecs.codec import TensorCodec
 from ..profiling.profiler import PerformanceProfiler
 from .registry import TensorRegistry
-from .tensor import TensorReference, SharedTensor
+from .reference import TensorReference
+from .tensor import SharedTensor
 
 # Optional dependencies
 try:
