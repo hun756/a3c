@@ -1,104 +1,122 @@
-"""
-Data descriptors and metrics for TensorOptim library.
-
-This module defines data classes and structures used to describe
-tensor metadata, metrics, and configuration throughout the library.
-"""
-
 from __future__ import annotations
+import time
 from dataclasses import dataclass, field
-from functools import cached_property, reduce
-from operator import mul
-from typing import Tuple, Dict
+from typing import Tuple, Optional
+
 import torch
 
 from .aliases import TensorID, ByteSize
 from .enums import CompressionType
 
 
-@dataclass(frozen=True, slots=True, unsafe_hash=True)
-class TensorMetrics:
-    """Metrics and performance data for tensor operations."""
-    
-    creation_time: float
-    access_count: int = 0
-    last_access: float = 0.0
-    serialization_time: float = 0.0
-    deserialization_time: float = 0.0
-    compression_ratio: float = 1.0
-    memory_efficiency: float = 1.0
-    
-    def update_access(self, timestamp: float) -> TensorMetrics:
-        """Create a new metrics instance with updated access information."""
-        return TensorMetrics(
-            creation_time=self.creation_time,
-            access_count=self.access_count + 1,
-            last_access=timestamp,
-            serialization_time=self.serialization_time,
-            deserialization_time=self.deserialization_time,
-            compression_ratio=self.compression_ratio,
-            memory_efficiency=self.memory_efficiency
-        )
-
-
-@dataclass(frozen=True, unsafe_hash=True)
+@dataclass(frozen=True)
 class TensorDescriptor:
-    """Advanced descriptor containing comprehensive tensor metadata."""
-    
     tensor_id: TensorID
     shape: Tuple[int, ...]
     dtype: torch.dtype
     device: torch.device
-    stride: Tuple[int, ...]
-    storage_offset: int
-    requires_grad: bool
-    timestamp: float
-    checksum: int
-    compression_type: CompressionType
-    metrics: TensorMetrics
+    requires_grad: bool = False
+    compression_type: CompressionType = CompressionType.NONE
+    checksum: int = 0
+    created_at: float = field(default_factory=time.perf_counter)
+    last_accessed: float = field(default_factory=time.perf_counter)
     numa_node: int = -1
     alignment: int = 64
+    metadata: Optional[dict] = None
     
-    @cached_property
-    def element_count(self) -> int:
-        """Calculate total number of elements in the tensor."""
-        return reduce(mul, self.shape, 1) if self.shape else 0
+    def __post_init__(self):
+        if not self.shape or any(dim <= 0 for dim in self.shape):
+            raise ValueError(f"Invalid tensor shape: {self.shape}")
+        
+        if self.alignment <= 0 or (self.alignment & (self.alignment - 1)) != 0:
+            raise ValueError(f"Alignment must be a positive power of 2: {self.alignment}")
     
-    @cached_property
+    @property
+    def numel(self) -> int:
+        result = 1
+        for dim in self.shape:
+            result *= dim
+        return result
+    
+    @property
     def element_size(self) -> int:
-        """Get the size of each element in bytes."""
-        return torch.empty(0, dtype=self.dtype).element_size()
+        dtype_sizes = {
+            torch.bool: 1,
+            torch.uint8: 1,
+            torch.int8: 1,
+            torch.int16: 2,
+            torch.int32: 4,
+            torch.int64: 8,
+            torch.float16: 2,
+            torch.bfloat16: 2,
+            torch.float32: 4,
+            torch.float64: 8,
+            torch.complex64: 8,
+            torch.complex128: 16,
+        }
+        return dtype_sizes.get(self.dtype, 4)
     
-    @cached_property
+    @property
     def raw_byte_size(self) -> ByteSize:
-        """Calculate raw byte size without alignment."""
-        return ByteSize(self.element_count * self.element_size)
+        return ByteSize(self.numel * self.element_size)
     
-    @cached_property
+    @property
     def aligned_byte_size(self) -> ByteSize:
-        """Calculate aligned byte size with padding."""
-        size = self.raw_byte_size
-        return ByteSize(((size + self.alignment - 1) // self.alignment) * self.alignment)
+        raw_size = self.raw_byte_size
+        return ByteSize((raw_size + self.alignment - 1) & ~(self.alignment - 1))
     
-    @cached_property
-    def cache_key(self) -> str:
-        """Generate a unique cache key for this tensor descriptor."""
-        return f"{self.tensor_id}_{hash((self.shape, self.dtype, self.device))}"
+    @property
+    def is_cuda(self) -> bool:
+        return self.device.type == 'cuda'
     
-    def is_compatible_with(self, other: 'TensorDescriptor') -> bool:
-        """Check if this descriptor is compatible with another for operations."""
-        return (
-            self.shape == other.shape and
-            self.dtype == other.dtype and
-            self.device == other.device
+    @property
+    def is_cpu(self) -> bool:
+        return self.device.type == 'cpu'
+    
+    def with_checksum(self, checksum: int) -> TensorDescriptor:
+        return self.__class__(
+            tensor_id=self.tensor_id,
+            shape=self.shape,
+            dtype=self.dtype,
+            device=self.device,
+            requires_grad=self.requires_grad,
+            compression_type=self.compression_type,
+            checksum=checksum,
+            created_at=self.created_at,
+            last_accessed=time.perf_counter(),
+            numa_node=self.numa_node,
+            alignment=self.alignment,
+            metadata=self.metadata
         )
     
-    def get_memory_footprint(self) -> Dict[str, int]:
-        """Get detailed memory footprint information."""
+    def with_compression(self, compression_type: CompressionType) -> TensorDescriptor:
+        return self.__class__(
+            tensor_id=self.tensor_id,
+            shape=self.shape,
+            dtype=self.dtype,
+            device=self.device,
+            requires_grad=self.requires_grad,
+            compression_type=compression_type,
+            checksum=self.checksum,
+            created_at=self.created_at,
+            last_accessed=self.last_accessed,
+            numa_node=self.numa_node,
+            alignment=self.alignment,
+            metadata=self.metadata
+        )
+    
+    def estimate_memory_usage(self) -> dict:
         return {
             'raw_bytes': self.raw_byte_size,
             'aligned_bytes': self.aligned_byte_size,
-            'element_count': self.element_count,
-            'element_size': self.element_size,
-            'alignment_overhead': self.aligned_byte_size - self.raw_byte_size
+            'overhead_bytes': self.aligned_byte_size - self.raw_byte_size,
+            'compression_type': self.compression_type.name,
+            'numa_node': self.numa_node
         }
+    
+    def __str__(self) -> str:
+        return (
+            f"TensorDescriptor(id={self.tensor_id}, shape={self.shape}, "
+            f"dtype={self.dtype}, device={self.device}, "
+            f"size={self.aligned_byte_size} bytes)"
+        )

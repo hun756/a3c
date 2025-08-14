@@ -1,15 +1,8 @@
-"""
-Enumeration types for TensorOptim library.
-
-This module defines all enumeration types used throughout the library
-for configuration, state management, and type safety.
-"""
-
-from enum import IntEnum, auto
+from __future__ import annotations
+from enum import IntEnum
 
 
 class MemoryBackendType(IntEnum):
-    """Memory backend types for tensor storage."""
     MMAP_PRIVATE = 1
     MMAP_SHARED = 2
     POSIX_SHM = 3
@@ -20,7 +13,6 @@ class MemoryBackendType(IntEnum):
 
 
 class TensorLifecycleState(IntEnum):
-    """Tensor lifecycle states for state management."""
     UNINITIALIZED = 0
     ALLOCATING = 1
     ALLOCATED = 2
@@ -35,7 +27,6 @@ class TensorLifecycleState(IntEnum):
 
 
 class CompressionType(IntEnum):
-    """Compression algorithms for tensor data."""
     NONE = 0
     LZ4 = 1
     ZSTD = 2
@@ -43,7 +34,6 @@ class CompressionType(IntEnum):
 
 
 class AllocationStrategy(IntEnum):
-    """Memory allocation strategies."""
     FIRST_FIT = 1
     BEST_FIT = 2
     WORST_FIT = 3

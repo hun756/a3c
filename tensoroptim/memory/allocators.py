@@ -1,10 +1,3 @@
-"""
-Memory allocator implementations for TensorOptim library.
-
-This module provides various memory allocation strategies including
-slab allocators for efficient memory management.
-"""
-
 from __future__ import annotations
 from collections import deque
 from threading import RLock

@@ -1,22 +1,15 @@
-"""
-Memory management components for TensorOptim library.
-
-This module provides various memory backends, allocators, and segments
-for efficient tensor storage and management.
-"""
-
-from .backends import MemoryBackendType
+from .backends import MemoryBackend, HugePagesBackend, PosixShmBackend, CudaIpcBackend
+from .segments import HugePagesSegment, PosixShmSegment, NumaAwareSegment, OptimizedBuffer
 from .allocators import SlabAllocator
-from .segments import (
-    HugePagesSegment,
-    NumaAwareSharedMemory,
-    OptimizedBuffer
-)
 
 __all__ = [
-    "MemoryBackendType",
-    "SlabAllocator", 
+    "MemoryBackend",
+    "HugePagesBackend",
+    "PosixShmBackend", 
+    "CudaIpcBackend",
     "HugePagesSegment",
-    "NumaAwareSharedMemory",
+    "PosixShmSegment",
+    "NumaAwareSegment",
     "OptimizedBuffer",
+    "SlabAllocator",
 ]
