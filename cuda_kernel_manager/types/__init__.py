@@ -23,13 +23,25 @@ from .enums import (
     SchedulingPolicy,
     StreamType,
 )
+from .protocols import (
+    AsyncDisposable,
+    Cacheable,
+    Copyable,
+    Disposable,
+    Resizable,
+    Serializable,
+)
 
 __all__ = [
     "AllocationStrategy",
+    "AsyncDisposable",
     "BinaryHash",
+    "Cacheable",
     "CompileStatus", 
+    "Copyable",
     "DeviceID",
     "DeviceType",
+    "Disposable",
     "EventHandle",
     "ExecutionState",
     "FunctionHandle",
@@ -40,7 +52,9 @@ __all__ = [
     "MemoryType",
     "ModuleHandle",
     "ProfilerHandle",
+    "Resizable",
     "SchedulingPolicy",
+    "Serializable",
     "SourceHash",
     "StreamHandle",
     "StreamType",
